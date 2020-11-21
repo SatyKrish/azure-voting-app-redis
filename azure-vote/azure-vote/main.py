@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template
+from flask_healthz import healthz, HealthError
 import os
 import random
 import redis
@@ -6,6 +7,7 @@ import socket
 import sys
 
 app = Flask(__name__)
+app.register_blueprint(healthz, url_prefix="/healthz")
 
 # Load configurations from environment or config file
 app.config.from_pyfile('config_file.cfg')
@@ -26,18 +28,23 @@ else:
     title = app.config['TITLE']
 
 # Redis configurations
-redis_server = os.environ['REDIS']
+redis_server = os.environ['REDIS_SERVER']
+redis_port = os.environ['REDIS_PORT']
 
 # Redis Connection
 try:
     if "REDIS_PWD" in os.environ:
         r = redis.StrictRedis(host=redis_server,
-                        port=6379,
-                        password=os.environ['REDIS_PWD'])
+                        port=redis_port,
+                        password=os.environ['REDIS_PWD'],
+                        ssl=True if redis_port is '6380' else False,
+                        ssl_cert_reqs=None)
     else:
-        r = redis.Redis(redis_server)
+        r = redis.Redis(host=redis_server,
+                        port=redis_port)
     r.ping()
-except redis.ConnectionError:
+except redis.ConnectionError as err:
+    sys.stderr.write('ERROR: %sn' % str(err))
     exit('Failed to connect to Redis, terminating.')
 
 # Change title to host name to demo NLB
@@ -83,6 +90,15 @@ def index():
                 
             # Return results
             return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
+
+def liveness():
+    pass
+
+def readiness():
+    try:
+        r.ping()
+    except redis.ConnectionError:
+        raise HealthError("Failed to connect to Redis")
 
 if __name__ == "__main__":
     app.run()
