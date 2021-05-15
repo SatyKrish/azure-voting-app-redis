@@ -1,0 +1,41 @@
+apiVersion: 2019-12-01
+type: Microsoft.ContainerInstance/containerGroups
+location: eastus2
+name: azure-vote
+tags: {name: azure-vote}
+properties:
+  containers:
+  - name: azure-vote-frontend
+    properties:
+      image: akstestacr0001.azurecr.io/azure-vote:0.3
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1
+      ports:
+      - port: 80
+      environmentVariables:
+      - name: REDIS_SERVER
+        value: localhost
+      - name: REDIS_PORT
+        value: "6379"
+  - name: azure-vote-backend
+    properties:
+      image: redis
+      resources:
+        requests:
+          cpu: 1
+          memoryInGb: 1
+      ports:
+      - port: 6379
+  osType: Linux
+  ipAddress:
+    type: Public
+    ports:
+    - protocol: tcp
+      port: 80
+    dnsNameLabel: azvote
+  imageRegistryCredentials:
+  - server: akstestacr0001.azurecr.io
+    username: akstestacr0001
+    password: "xxxxx"

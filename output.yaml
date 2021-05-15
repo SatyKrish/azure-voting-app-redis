@@ -1,0 +1,33 @@
+additional_properties: {}
+apiVersion: '2018-10-01'
+identity: null
+location: eastus2
+name: azure-vote-test
+properties:
+  containers:
+  - name: azure-vote-test
+    properties:
+      environmentVariables: []
+      image: akstestacr0001.azurecr.io/azure-vote:0.1
+      ports:
+      - port: 80
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 1.0
+          memoryInGB: 1.0
+  imageRegistryCredentials:
+  - server: akstestacr0001.azurecr.io
+    username: akstestacr0001
+  ipAddress:
+    dnsNameLabel: azvote
+    fqdn: azvote.eastus2.azurecontainer.io
+    ip: 52.247.74.125
+    ports:
+    - port: 80
+      protocol: TCP
+    type: Public
+  osType: Linux
+  restartPolicy: Always
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups
